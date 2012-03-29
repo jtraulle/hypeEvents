@@ -40,7 +40,8 @@ function hj_events_setup_event_form() {
 		$form->addField(array(
 			'title' => 'Description',
 			'name' => 'description',
-			'input_type' => 'longtext'
+			'input_type' => 'longtext',
+			'class' => 'elgg-input-longtext'
 		));
 
 		$form->addField(array(

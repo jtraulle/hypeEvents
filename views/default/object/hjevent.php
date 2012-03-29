@@ -21,12 +21,12 @@ $title = elgg_view('output/url', array('text' => $entity->title, 'href' => $enti
 $time_icon = elgg_view_icon('hj hj-icon-time');
 
 if ($entity->calendar_start) {
-	$starttime = elgg_view('output/date_and_time', array('value' => $entity->calendar_start));
+	$starttime = elgg_view('output/date_and_time', array('value' => $entity->calendar_start, 'entity' => $entity));
 	$starttime_str = elgg_echo('hj:events:starttime', array($starttime));
 }
 
 if ($entity->calendar_end) {
-	$endtime = elgg_view('output/date_and_time', array('value' => $entity->calendar_end));
+	$endtime = elgg_view('output/date_and_time', array('value' => $entity->calendar_end, 'entity' => $entity));
 	$endtime_str = elgg_echo('hj:events:endtime', array($endtime));
 }
 
@@ -143,9 +143,6 @@ if (!$full || (elgg_is_xhr() && !elgg_in_context('fancybox'))) {
 	$comments .= elgg_view_module('info', elgg_echo('comments'), elgg_view_comments($entity));
 
 	echo $summary;
-	echo elgg_view_layout('hj/dynamic', array(
-		'grid' => array(8, 4),
-		'content' => array($full_description . $comments, $sidebar)
-	));
+	echo $full_description . $comments;
 }
 echo '</div>';

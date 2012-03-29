@@ -40,7 +40,7 @@ $events = elgg_get_entities_from_metadata($options);
 $options['count'] = true;
 $events_count = elgg_get_entities_from_metadata($options);
 unset($options['count']);
-$events_options = htmlentities(json_encode($options), ENT_QUOTES, 'UTF-8');
+$events_options = $options;
 
 $target = 'hj-filtered-events-list';
 $view_params = array(

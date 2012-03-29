@@ -8,7 +8,6 @@
  * @author Ismayil Khayredinov <ismayil.khayredinov@gmail.com>
  * @copyright Copyrigh (c) 2011, Ismayil Khayredinov
  */
-
 elgg_register_event_handler('init', 'system', 'hj_events_init');
 
 function hj_events_init() {
@@ -45,6 +44,7 @@ function hj_events_init() {
 	elgg_register_action('events/search', $shortcuts['actions'] . 'hj/events/search.php');
 	elgg_register_action('hj/events/import', $shortcuts['actions'] . 'hj/events/import.php');
 	elgg_register_action('events/deletefeed', $shortcuts['actions'] . 'hj/events/deletefeed.php');
+	elgg_register_action('hypeEvents/settings/save', $shortcuts['actions'] . 'hj/events/plugin_settings.php', 'admin');
 
 // Register CSS and JS
 	$css_url = elgg_get_simplecache_url('css', 'hj/events/base');
@@ -74,6 +74,9 @@ function hj_events_init() {
 	elgg_register_plugin_hook_handler('register', 'menu:hjentityhead', 'hj_events_entity_head_menu');
 	elgg_register_plugin_hook_handler('register', 'menu:rsvp', 'hj_events_rsvp_menu');
 
+	elgg_register_event_handler('create', 'object', 'hj_events_compare_dates');
+	elgg_register_event_handler('update', 'object', 'hj_events_compare_dates');
+
 	elgg_extend_view('css/hj/portfolio/base', 'css/hj/events/base');
 }
 
@@ -94,13 +97,7 @@ function hj_events_time_input_process($hook, $type, $return, $params) {
 			$field_name = $field->name;
 
 			$event_time = get_input($field_name);
-			$timezone = (int) $event_time['timezone'] / (60 * 60);
-			if ($timezone >= 0) {
-				$timezone = "GMT+$timezone";
-			} else {
-				$timezone = "GMT$timezone";
-			}
-			$timestr = "{$event_time['date']} {$event_time['time']} {$timezone}";
+			$timestr = implode(' ', $event_time);
 
 			$dt = new DateTime($timestr);
 			$dt->setTimezone(new DateTimeZone('UTC'));
@@ -111,7 +108,8 @@ function hj_events_time_input_process($hook, $type, $return, $params) {
 
 			$entity->$field_name = $timestamp;
 			$entity->$field_name_str = $timestr;
-			$entity->$field_name_offset = $dt->getOffset();
+			$entity->$field_name_off = $dt->getOffset();
+			$entity->event_timezone = $event_time['timezone'];
 
 			if (!$entity->cal_uid) {
 				$entity->cal_uid = elgg_get_site_url() . "-$entity->guid";
@@ -124,7 +122,7 @@ function hj_events_page_handler($page) {
 //elgg_load_js('hj.comments.base');
 //elgg_load_css('hj.comments.bar');
 	elgg_load_js('hj.framework.ajax');
-	elgg_load_js('hj.framework.fieldcheck');
+	
 
 	elgg_load_js('hj.events.base');
 	elgg_load_css('hj.events.base');
@@ -138,7 +136,7 @@ function hj_events_page_handler($page) {
 	$plugin = 'hypeEvents';
 	$shortcuts = hj_framework_path_shortcuts($plugin);
 	$pages = $shortcuts['pages'] . 'events/';
-	elgg_push_breadcrumb(elgg_echo('hj:events'));
+	elgg_push_breadcrumb(elgg_echo('hj:events'), 'events');
 
 	$type = elgg_extract(0, $page, 'owner');
 
@@ -160,6 +158,14 @@ function hj_events_page_handler($page) {
 			$event = elgg_extract(1, $page);
 			set_input('e', $event);
 			include "{$pages}event.php";
+			break;
+
+		case 'edit' :
+			$event = elgg_extract(1, $page, false);
+			if ($event) {
+				set_input('e', $event);
+			}
+			include "{$pages}edit.php";
 			break;
 
 		case 'owner' :
@@ -218,15 +224,11 @@ function hj_events_entity_head_menu($hook, $type, $return, $params) {
 	$handler = elgg_extract('handler', $params);
 	$data = hj_framework_json_query($params);
 
-	if (elgg_in_context('print') || elgg_in_context('activity')) {
-		return $return;
-	}
-
 	if (elgg_instanceof($entity, 'object', 'hjevent')) {
 		$ical = array(
 			'name' => 'ical',
 			'title' => elgg_echo('hj:events:ical'),
-			'text' => elgg_view_icon('hj hj-icon-download'),
+			'text' => elgg_echo('hj:events:ical'),
 			'href' => "events/export/event/$entity->guid/",
 		);
 		$return[] = ElggMenuItem::factory($ical);
@@ -284,8 +286,16 @@ function hj_events_rsvp_menu($hook, $type, $return, $params) {
 	return $return;
 }
 
-run_function_once('hj_events_add_subtypes');
+function hj_events_compare_dates($event, $type, $entity) {
 
-function hj_events_add_subtypes() {
-	add_subtype('object', 'hjevent', 'hjEvent');
+	if (!elgg_instanceof($entity, 'object', 'hjevent')) {
+		return true;
+	}
+
+	if ($entity->calendar_end < $entity->calendar_start) {
+		register_error(elgg_echo('hj:events:endbeforestart'));
+		return false;
+	}
+
+	return true;
 }

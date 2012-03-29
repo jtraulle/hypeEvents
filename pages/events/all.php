@@ -14,7 +14,7 @@ $options = array(
 	'subtype' => 'hjevent',
 	'limit' => $limit,
 	'offset' => $offset,
-	'order_by_metadata' => array('name' => 'calendar_start', 'direction' => 'ASC', 'as' => 'integer')
+	'order_by_metadata' => array('name' => 'calendar_start', 'direction' => 'asc', 'as' => 'integer')
 );
 
 if ($calendar_start) {
@@ -46,7 +46,7 @@ if (!$calendar_start && !$calendar_end && !$location && !$date) {
 	$options['count'] = true;
 	$upcoming_events_count = elgg_get_entities_from_metadata($options);
 	unset($options['count']);
-	$upcoming_events_options = htmlentities(json_encode($options), ENT_QUOTES, 'UTF-8');
+	$upcoming_events_options = $options;
 	unset($options['metadata_name_value_pairs']);
 
 	$target = 'hj-upcoming-events-list';
@@ -64,13 +64,14 @@ if (!$calendar_start && !$calendar_end && !$location && !$date) {
 
 	$upcoming_events_list = elgg_view_entity_list($upcoming_events, $view_params);
 
+	$options['order_by_metadata'] = array('name' => 'calendar_start', 'direction' => 'desc', 'as' => 'integer');
 	$options['metadata_name_value_pairs'][] = array('name' => 'calendar_end', 'value' => $timestamp, 'operand' => '<');
 
 	$past_events = elgg_get_entities_from_metadata($options);
 	$options['count'] = true;
 	$past_events_count = elgg_get_entities_from_metadata($options);
 	unset($options['count']);
-	$past_events_options = htmlentities(json_encode($options), ENT_QUOTES, 'UTF-8');
+	$past_events_options = $options;
 
 	$target = 'hj-past-events-list';
 	$view_params = array(
@@ -82,7 +83,8 @@ if (!$calendar_start && !$calendar_end && !$location && !$date) {
 		'data-options' => $past_events_options,
 		'limit' => $limit,
 		'count' => $past_events_count,
-		'base_url' => 'events/sync'
+		'base_url' => 'events/sync',
+		'inverse_order' => true
 	);
 
 	$past_events_list = elgg_view_entity_list($past_events, $view_params);
@@ -95,7 +97,7 @@ if (!$calendar_start && !$calendar_end && !$location && !$date) {
 	$options['count'] = true;
 	$events_count = elgg_get_entities_from_metadata($options);
 	unset($options['count']);
-	$events_options = htmlentities(json_encode($options), ENT_QUOTES, 'UTF-8');
+	$events_options = $options;
 
 	$target = 'hj-filtered-events-list';
 	$view_params = array(

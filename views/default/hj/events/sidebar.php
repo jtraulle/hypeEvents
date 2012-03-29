@@ -6,7 +6,7 @@
 $user = elgg_get_logged_in_user_entity();
 
 elgg_load_js('hj.framework.ajax');
-elgg_load_js('hj.framework.fieldcheck');
+
 
 elgg_register_menu_item('page', array(
 	'name' => 'allevents',
@@ -32,7 +32,7 @@ elgg_register_menu_item('page', array(
 //		'priority' => 600
 //	));
 
-elgg_load_js('hj.framework.fieldcheck');
+
 $form = hj_framework_get_data_pattern('object', 'hjevent');
 $params = array(
 	'form_guid' => $form->guid,

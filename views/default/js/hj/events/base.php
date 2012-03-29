@@ -4,6 +4,46 @@
 	elgg.provide('hj.events.base');
 
 	hj.events.base.init = function() {
+		$('#calendar_start_datepicker').datepicker({
+			dateFormat: 'dd-mm-yy',
+			minDate: 0,
+			onSelect: function(dateText) {
+				$('#calendar_end_datepicker').datepicker("setDate", dateText);
+			}
+		});
+
+		$('#calendar_end_datepicker').datepicker({
+			dateFormat: 'dd-mm-yy',
+			minDate: 0,
+			onSelect: function(dateText, inst) {
+				var dateEndParts = dateText.split("-");
+				var timestampEnd = Date.UTC(dateEndParts[2], dateEndParts[1] - 1, dateEndParts[0]);
+				timestampEnd = timestampEnd / 1000;
+
+				var dateStart = $('#calendar_start_datepicker').datepicker("getDate");
+				var dateStartParts = $.datepicker.formatDate('dd-mm-yy', dateStart).split('-');
+				var timestampStart = Date.UTC(dateStartParts[2], dateStartParts[1] - 1, dateStartParts[0]);
+				timestampStart = timestampStart / 1000;
+				
+				if (timestampEnd < timestampStart) {
+					elgg.system_message(elgg.echo('hj:events:endbeforestart'));
+					$('#calendar_end_datepicker').datepicker("setDate", dateStart);
+				}
+			}
+		});
+
+		$('select[name="calendar_start[time]"]')
+		.unbind('change')
+		.bind('change', function(event) {
+			$('select[name="calendar_end[time]"]').val($(this).val());
+		});
+
+		$('select[name="calendar_start[timezone]"]')
+		.unbind('change')
+		.bind('change', function(event) {
+			$('select[name="calendar_end[timezone]"]').val($(this).val());
+		});
+
 		$('.hj-ajaxed-rsvp')
 		.unbind('click')
 		.bind('click', function(event) {

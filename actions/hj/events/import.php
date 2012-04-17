@@ -21,7 +21,7 @@ if (!empty($_FILES['calendar']['name'])) {
 	$filehandler->setFilename($prefix . $filestorename);
 	$filehandler->setMimeType($_FILES['calendar']['type']);
 	$filehandler->originalfilename = $_FILES['calendar']['name'];
-	$filehandler->simpletype = file_get_simple_type($_FILES['calendar']['type']);
+	//$filehandler->simpletype = file_get_simple_type($_FILES['calendar']['type']);
 
 	$filehandler->open("write");
 	$filehandler->close();

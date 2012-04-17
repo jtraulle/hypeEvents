@@ -59,7 +59,8 @@ if (!$calendar_start && !$calendar_end && !$location && !$date) {
 		'data-options' => $upcoming_events_options,
 		'limit' => $limit,
 		'count' => $upcoming_events_count,
-		'base_url' => 'events/sync'
+		'base_url' => 'events/sync',
+		'dom_order' => 'append'
 	);
 
 	$upcoming_events_list = elgg_view_entity_list($upcoming_events, $view_params);
@@ -84,7 +85,7 @@ if (!$calendar_start && !$calendar_end && !$location && !$date) {
 		'limit' => $limit,
 		'count' => $past_events_count,
 		'base_url' => 'events/sync',
-		'inverse_order' => true
+		'dom_order' => 'append'
 	);
 
 	$past_events_list = elgg_view_entity_list($past_events, $view_params);

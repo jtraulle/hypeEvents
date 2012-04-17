@@ -8,7 +8,7 @@
  * @author Ismayil Khayredinov <ismayil.khayredinov@gmail.com>
  * @copyright Copyrigh (c) 2011, Ismayil Khayredinov
  */
-elgg_register_event_handler('init', 'system', 'hj_events_init');
+elgg_register_event_handler('init', 'system', 'hj_events_init', 502);
 
 function hj_events_init() {
 
@@ -119,8 +119,6 @@ function hj_events_time_input_process($hook, $type, $return, $params) {
 }
 
 function hj_events_page_handler($page) {
-//elgg_load_js('hj.comments.base');
-//elgg_load_css('hj.comments.bar');
 	elgg_load_js('hj.framework.ajax');
 	
 
@@ -136,6 +134,7 @@ function hj_events_page_handler($page) {
 	$plugin = 'hypeEvents';
 	$shortcuts = hj_framework_path_shortcuts($plugin);
 	$pages = $shortcuts['pages'] . 'events/';
+
 	elgg_push_breadcrumb(elgg_echo('hj:events'), 'events');
 
 	$type = elgg_extract(0, $page, 'owner');

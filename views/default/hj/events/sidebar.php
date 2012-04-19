@@ -97,10 +97,3 @@ $content_menu = elgg_view_menu('page', array(
 	'context' => elgg_get_context(),
 	'sort_by' => 'priority'
 		));
-
-echo <<<HTML
-        <div id="hj-events-owner-block-$user->guid" class="hj-events-owner-block">
-                $content_menu
-</div>
-
-HTML;

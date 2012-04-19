@@ -100,9 +100,71 @@
 				}
 			})
 		})
+
+		$('.hj-dt-to-img').each(function() {
+			$div = $(this).next('.hj-dt-to-img-div');
+			if ($div.html().length == 0) {
+				var dtToParse = new Date($(this).val());
+				$(this).next('.hj-dt-to-img-div').calendarIcon(dtToParse);
+			}
+		})
 	}
 
 	elgg.register_hook_handler('init', 'system', hj.events.base.init);
 	elgg.register_hook_handler('success', 'hj:framework:ajax', hj.events.base.init, 500);
+
+// jQuery-calendaricon script by Branko Vukelic
+// https://github.com/HerdHound/jQuery-calendarIcon/blob/master/jquery.calendar-icon.js
+(function ($) {
+    var dateIconClasses = 'calendar-icon-container';
+    var dateIconMonthClasses = 'calendar-icon-month calendar-icon-top';
+    var dateIconYearClasses = 'calendar-icon-year calendar-icon-top';
+    var dateIconDateClasses = 'calendar-icon-date';
+    var dateIconDayClasses = 'calendar-icon-day';
+
+    $.fn.calendarIcon = function(date) {
+        var daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fry', 'Sat'];
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var year, day, month, dayOfWeek, dateIcon;
+        //var currentYear = (new Date()).getFullYear();
+		var currentYear = '';
+
+        if (typeof date === 'string') {
+            date = Date.parse(date);
+        }
+
+        year = date.getFullYear() !== currentYear && '`' + (date.getFullYear() + '').slice(2) || '';
+        day = '' + date.getDate();
+        month = months[date.getMonth()];
+        dayOfWeek = daysOfWeek[date.getDay()];
+
+        dateIcon = $('<div>')
+        .addClass(dateIconClasses)
+        .appendTo(this);
+
+        $('<span>')
+        .addClass(dateIconMonthClasses)
+        .text(month)
+        .appendTo(dateIcon);
+
+        $('<span>')
+        .addClass(dateIconYearClasses)
+        .text(year)
+        .appendTo(dateIcon);
+
+        $('<span>')
+        .addClass(dateIconDateClasses)
+        .text(day)
+        .appendTo(dateIcon);
+
+        $('<span>')
+        .addClass(dateIconDayClasses)
+        .text(dayOfWeek)
+        .appendTo(dateIcon);
+
+        return this;
+
+    };
+})(jQuery);
 
 <?php if (FALSE) : ?></script><?php endif; ?>

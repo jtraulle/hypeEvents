@@ -121,14 +121,10 @@ if (!$calendar_start && !$calendar_end && !$location && !$date) {
 $content = elgg_view_module('info', elgg_echo('hj:events'), $content, array('id' => 'hj-events-module'));
 $search_box = elgg_view('hj/events/filter');
 
-$content = elgg_view_layout('hj/dynamic', array(
-	'grid' => array(8, 4),
-	'content' => array($content, $search_box)
-		));
-
 $sidebar = elgg_view('hj/events/sidebar');
+$sidebar .= $search_box;
 
-$page = elgg_view_layout('hj/profile', array(
+$page = elgg_view_layout('one_sidebar', array(
 	'sidebar' => $sidebar,
 	'content' => $content
 		));

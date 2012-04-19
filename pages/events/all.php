@@ -124,7 +124,7 @@ $search_box = elgg_view('hj/events/filter');
 $sidebar = elgg_view('hj/events/sidebar');
 $sidebar .= $search_box;
 
-$page = elgg_view_layout('one_sidebar', array(
+$page = elgg_view_layout('content', array(
 	'sidebar' => $sidebar,
 	'content' => $content
 		));

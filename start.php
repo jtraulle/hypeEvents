@@ -136,7 +136,7 @@ function hj_events_page_handler($page) {
 	$shortcuts = hj_framework_path_shortcuts($plugin);
 	$pages = $shortcuts['pages'] . 'events/';
 
-	elgg_push_breadcrumb(elgg_echo('hj:events'), 'events');
+	elgg_push_breadcrumb(elgg_echo('hj:events'), 'events/all');
 
 	$type = elgg_extract(0, $page, 'owner');
 

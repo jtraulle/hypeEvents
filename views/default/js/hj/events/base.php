@@ -104,7 +104,7 @@
 		$('.hj-dt-to-img').each(function() {
 			$div = $(this).next('.hj-dt-to-img-div');
 			if ($div.html().length == 0) {
-				var dtToParse = new Date($(this).val());
+				var dtToParse = $(this).val();
 				$(this).next('.hj-dt-to-img-div').calendarIcon(dtToParse);
 			}
 		})
@@ -123,14 +123,14 @@
     var dateIconDayClasses = 'calendar-icon-day';
 
     $.fn.calendarIcon = function(date) {
-        var daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fry', 'Sat'];
+        var daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         var year, day, month, dayOfWeek, dateIcon;
         //var currentYear = (new Date()).getFullYear();
 		var currentYear = '';
 
         if (typeof date === 'string') {
-            date = Date.parse(date);
+            date = new Date(date);
         }
 
         year = date.getFullYear() !== currentYear && '`' + (date.getFullYear() + '').slice(2) || '';

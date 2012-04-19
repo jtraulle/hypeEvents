@@ -52,7 +52,7 @@ if ($entity->icon) {
 
 	if (elgg_get_plugin_setting('timezone_disable') == 'disable' && $default_timezone = elgg_get_plugin_setting('default_timezone', 'hypeEvents')) {
 		$def_tz = $dt->setTimezone(new DateTimeZone($default_timezone));
-		$def_tm = $dt->format(elgg_echo('hj:events:fulltimeformat'));
+		$def_tm = $dt->format('r');
 		$html = elgg_view('input/hidden', array(
 			'value' => $def_tm,
 			'class' => 'hj-dt-to-img'
@@ -60,7 +60,7 @@ if ($entity->icon) {
 		$html .= '<div class="hj-dt-to-img-div"></div>';
 	} elseif ($default_timezone = $entity->event_timezone) {
 		$def_tz = $dt->setTimezone(new DateTimeZone($default_timezone));
-		$def_tm = $dt->format(elgg_echo('hj:events:fulltimeformat'));
+		$def_tm = $dt->format('r');
 		$html = elgg_view('input/hidden', array(
 			'value' => $def_tm,
 			'class' => 'hj-dt-to-img'
@@ -68,7 +68,7 @@ if ($entity->icon) {
 		$html .= '<div class="hj-dt-to-img-div"></div>';
 	} else {
 		$html = elgg_view('input/hidden', array(
-			'value' => date(elgg_echo('hj:events:fulltimeformat'), $entity->calendar_start),
+			'value' => date('r', $entity->calendar_start),
 			'class' => 'hj-dt-to-img'
 				));
 		$html .= '<div class="hj-dt-to-img-div"></div>';

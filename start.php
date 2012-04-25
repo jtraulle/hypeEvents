@@ -39,7 +39,7 @@ function hj_events_init() {
 
 	// Register Actions
 	elgg_register_action('events/rsvp', $shortcuts['actions'] . 'hj/events/rsvp.php');
-	elgg_register_action('events/search', $shortcuts['actions'] . 'hj/events/search.php');
+	elgg_register_action('events/search', $shortcuts['actions'] . 'hj/events/search.php', 'public');
 	elgg_register_action('hj/events/import', $shortcuts['actions'] . 'hj/events/import.php');
 	elgg_register_action('events/deletefeed', $shortcuts['actions'] . 'hj/events/deletefeed.php');
 	elgg_register_action('hypeEvents/settings/save', $shortcuts['actions'] . 'hj/events/plugin_settings.php', 'admin');
@@ -61,13 +61,11 @@ function hj_events_init() {
 	elgg_register_page_handler('events', 'hj_events_page_handler');
 
 	// Register Site Menu Item
-	if (elgg_is_logged_in()) {
-		elgg_register_menu_item('site', array(
-			'name' => 'events',
-			'text' => elgg_echo('hj:events'),
-			'href' => 'events/all'
-		));
-	}
+	elgg_register_menu_item('site', array(
+		'name' => 'events',
+		'text' => elgg_echo('hj:events'),
+		'href' => 'events/all'
+	));
 
 	// Register new profile menu item
 	elgg_register_plugin_hook_handler('register', 'menu:owner_block', 'hj_events_owner_block_menu');
@@ -121,7 +119,7 @@ function hj_events_time_input_process($hook, $type, $return, $params) {
 
 function hj_events_page_handler($page) {
 	elgg_load_js('hj.framework.ajax');
-	
+
 
 	elgg_load_js('hj.events.base');
 	elgg_load_css('hj.events.base');
@@ -142,16 +140,19 @@ function hj_events_page_handler($page) {
 
 	switch ($type) {
 		case 'all' :
+			hj_events_register_title_buttons();
 			include "{$pages}all.php";
 			break;
 
 		case 'event' :
+			hj_events_register_title_buttons();
 			$event = elgg_extract(1, $page);
 			set_input('e', $event);
 			include "{$pages}event.php";
 			break;
 
 		case 'edit' :
+			gatekeeper();
 			$event = elgg_extract(1, $page, false);
 			if ($event) {
 				set_input('e', $event);
@@ -160,11 +161,20 @@ function hj_events_page_handler($page) {
 			break;
 
 		case 'owner' :
+			gatekeeper();
+			hj_events_register_title_buttons();
 			$owner = elgg_extract(1, $page, elgg_get_logged_in_user_entity()->username);
 			set_input('username', $owner);
 			include "{$pages}owner.php";
 			break;
 
+		case 'friends' :
+			gatekeeper();
+			hj_events_register_title_buttons();
+			$owner = elgg_extract(1, $page, elgg_get_logged_in_user_entity()->username);
+			set_input('username', $owner);
+			include "{$pages}friends.php";
+			break;
 
 		case 'export' :
 			switch ($page[1]) {
@@ -187,10 +197,12 @@ function hj_events_page_handler($page) {
 			break;
 
 		case 'import' :
+			gatekeeper();
 			include "{$pages}import_event.php";
 			break;
 
 		case 'sync' :
+			gatekeeper();
 			include "{$pages}sync.php";
 			break;
 	}
@@ -291,4 +303,36 @@ function hj_events_compare_dates($event, $type, $entity) {
 	}
 
 	return true;
+}
+
+function hj_events_register_title_buttons() {
+	$form = hj_framework_get_data_pattern('object', 'hjevent');
+	$params = array(
+		'form_guid' => $form->guid,
+		'subtype' => 'hjevent',
+		'owner_guid' => $user->guid,
+		'target' => 'hj-upcoming-events-list',
+		'dom_order' => 'prepend',
+		'ajaxify' => false
+	);
+	$params = hj_framework_extract_params_from_params($params);
+	$params = hj_framework_json_query($params);
+
+	if (elgg_is_logged_in()) {
+		elgg_register_menu_item('title', array(
+			'name' => 'addevent',
+			'title' => elgg_echo('hj:events:addnew'),
+			'text' => elgg_view('input/button', array(
+				'value' => elgg_echo('hj:events:addnew'),
+				'class' => 'elgg-button-action'
+			)),
+			'href' => "action/framework/entities/edit",
+			'is_action' => true,
+			'rel' => 'fancybox',
+			'id' => "hj-ajaxed-add-hjevent",
+			'data-options' => htmlentities($params, ENT_QUOTES, 'UTF-8'),
+			'class' => "hj-ajaxed-add",
+			'target' => ""
+		));
+	}
 }

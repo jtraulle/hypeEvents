@@ -1,6 +1,306 @@
 <?php
 
-function hj_events_default_timezones($associated_array = true, $reverse_association = false) {
+/**
+ * Create a new DateTime object with an offset defined by plugin setting or custom timezone
+ *
+ * @param str $timestamp
+ * @param str $timezone
+ * @return DateTime
+ */
+function hj_events_get_offset_date_time_object($timestamp = null, $timezone = null) {
+
+	$dt = new DateTime();
+
+	if ($timestamp)
+		$dt->setTimestamp($timestamp);
+
+	$dt->setTimezone(new DateTimeZone('GMT'));
+	$utc = $dt->format(elgg_echo('hj:events:fulltimeformat'));
+
+	if (elgg_get_plugin_setting('timezone_disable') == 'disable' && $default_timezone = elgg_get_plugin_setting('default_timezone', 'hypeEvents')) {
+		$dt->setTimezone(new DateTimeZone($default_timezone));
+	} elseif ($timezone) {
+		$dt->setTimezone(new DateTimeZone($timezone));
+	}
+
+	return $dt;
+}
+
+/**
+ * Prepare params for a getter function
+ *
+ * @param str $rel all|owner|friends  set owner_guid in $event_options for owner or friends
+ * @param array $event_options
+ * @return array
+ */
+function hj_events_prepare_params($rel = 'all', $event_options = array(), $getter_options = array()) {
+
+	$calendar_start = elgg_extract('calendar_start', $event_options, false);
+	$calendar_end = elgg_extract('calendar_end', $event_options, false);
+	$location = elgg_extract('location', $event_options, false);
+	$date = elgg_extract('date', $event_options, false);
+
+	$defaults = array(
+		'type' => 'object',
+		'subtype' => 'hjevent',
+		'limit' => 10,
+		'offset' => 0,
+		'count' => false,
+		'order_by_metadata' => array('name' => 'calendar_start', 'direction' => 'asc', 'as' => 'integer')
+	);
+
+	$defaults = array_merge($defaults, $getter_options);
+
+	if ($calendar_start) {
+		$defaults['metadata_name_value_pairs'][] = array('name' => 'calendar_start', 'value' => $calendar_start, 'operand' => '>=');
+	}
+
+	if ($calendar_end) {
+		$defaults['metadata_name_value_pairs'][] = array('name' => 'calendar_end', 'value' => $calendar_end, 'operand' => '<=');
+	}
+
+	if ($location) {
+		$defaults['metadata_name_value_pairs'][] = array('name' => 'location', 'value' => '%' . $location . '%', 'operand' => 'LIKE');
+	}
+
+	if ($date) {
+		$defaults['metadata_name_value_pairs'][] = array('name' => 'calendar_start', 'value' => $date, 'operand' => '<=');
+		$defaults['metadata_name_value_pairs'][] = array('name' => 'calendar_end', 'value' => $date, 'operand' => '>=');
+	}
+
+	$owner_guid = elgg_extract('owner_guid', $event_options, elgg_get_logged_in_user_guid());
+
+	switch ($rel) {
+
+		case 'all' :
+		default :
+			// do nothing
+			break;
+
+		case 'owner' :
+			$defaults['owner_guid'] = $owner_guid;
+			break;
+
+		case 'friends' :
+			$defaults['owner_guids'] = array();
+			$user = get_entity($owner_guid);
+			if (elgg_instanceof($user, 'user')) {
+				$friends = $user->getFriends("", 0, 0);
+				if (sizeof($friends) > 0) {
+					foreach ($friends as $friend) {
+						$defaults['owner_guids'][] = $friend->guid;
+					}
+				} else {
+					return false;
+				}
+			}
+			break;
+	}
+
+	return $defaults;
+}
+
+/**
+ * Get upcoming events
+ *
+ * @param str $rel all|owner|friends
+ * @return Array of hjEvent|false
+ */
+function hj_events_get_upcoming_events($rel = 'all', $timestamp = null, $event_options = array(), $getter_options = array(), $return_options = false) {
+
+	$options = hj_events_prepare_params($rel, $event_options, $getter_options);
+
+	if (!$options) {
+		return false;
+	}
+	if (!$timestamp) {
+		$dt = hj_events_get_offset_date_time_object();
+		$timestamp = $dt->getTimestamp();
+	}
+
+	$options['metadata_name_value_pairs'][] = array('name' => 'calendar_start', 'value' => $timestamp, 'operand' => '>=');
+
+	$upcoming_events = elgg_get_entities_from_metadata($options);
+
+	if (!$return_options) {
+		return $upcoming_events;
+	} else {
+		return $options;
+	}
+}
+
+/**
+ * List upcoming events
+ *
+ * @param str $rel
+ * @return str
+ */
+function hj_events_list_upcoming_events($rel = 'all', $timestamp = null, $event_options = array(), $getter_options = array()) {
+
+	$options = hj_events_get_upcoming_events($rel, $timestamp, $event_options, $getter_options, true);
+	$upcoming_events_count = hj_events_get_upcoming_events($rel, $timestamp, $event_options, array('count' => true));
+	$upcoming_events = hj_events_get_upcoming_events($rel, $timestamp, $event_options);
+
+	$target = 'hj-upcoming-events-list';
+	$view_params = array(
+		'full_view' => false,
+		'list_id' => $target,
+		'list_class' => 'hj-view-list',
+		'item_class' => 'hj-view-entity elgg-state-draggable',
+		'pagination' => true,
+		'data-options' => $options,
+		'limit' => $options['limit'],
+		'count' => $upcoming_events_count,
+		'base_url' => 'events/sync',
+		'dom_order' => 'append'
+	);
+
+	$upcoming_events_list = elgg_view_entity_list($upcoming_events, $view_params);
+
+	return $upcoming_events_list;
+}
+
+/**
+ * Get past events
+ *
+ * @param str $rel all|owner|friends
+ * @return Array of hjEvent|false
+ */
+function hj_events_get_past_events($rel = 'all', $timestamp = null, $event_options = array(), $getter_options = array(), $return_options = false) {
+
+	$options = hj_events_prepare_params($rel, $event_options, $getter_options);
+
+	if (!$options) {
+		return false;
+	}
+	
+	if (!$timestamp) {
+		$dt = hj_events_get_offset_date_time_object();
+		$timestamp = $dt->getTimestamp();
+	}
+
+	$options['order_by_metadata'] = array('name' => 'calendar_start', 'direction' => 'desc', 'as' => 'integer');
+	$options['metadata_name_value_pairs'][] = array('name' => 'calendar_end', 'value' => $timestamp, 'operand' => '<');
+
+	$upcoming_events = elgg_get_entities_from_metadata($options);
+
+	if (!$return_options) {
+		return $upcoming_events;
+	} else {
+		return $options;
+	}
+}
+
+/**
+ * List upcoming events
+ *
+ * @param str $rel
+ * @return str
+ */
+function hj_events_list_past_events($rel = 'all', $timestamp = null, $event_options = array(), $getter_options = array()) {
+
+	$options = hj_events_get_past_events($rel, $timestamp, $event_options, $getter_options, true);
+	$past_events_count = hj_events_get_past_events($rel, $timestamp, $event_options, array('count' => true));
+	$past_events = hj_events_get_past_events($rel, $timestamp, $event_options);
+
+	$target = 'hj-past-events-list';
+	$view_params = array(
+		'full_view' => false,
+		'list_id' => $target,
+		'list_class' => 'hj-view-list',
+		'item_class' => 'hj-view-entity elgg-state-draggable',
+		'pagination' => true,
+		'data-options' => $options,
+		'limit' => $options['limit'],
+		'count' => $past_events_count,
+		'base_url' => 'events/sync',
+		'dom_order' => 'append'
+	);
+
+	$past_events_list = elgg_view_entity_list($past_events, $view_params);
+
+	return $past_events_list;
+}
+
+/**
+ * 	Get events that user rsvp'ed to
+ *
+ * @param str $type attending|maybe_attending|not_attending
+ * @param ElggUser $user
+ * @param str $timestamp
+ * @param array $getter_options
+ * @param bool $return_options
+ * @return Array of hjEvent
+ */
+function hj_events_get_user_rsvps($type = 'attending', $user = null, $timestamp = null, $getter_options = array(), $return_options = false) {
+
+	if (!$user) {
+		$user = elgg_get_logged_in_user_entity();
+	}
+	if (!$timestamp) {
+		$dt = hj_events_get_offset_date_time_object();
+		$timestamp = $dt->getTimestamp();
+	}
+
+	$db_prefix = elgg_get_config('dbprefix');
+	$rsvp_options = array(
+		'relationship' => $type,
+		'relationship_guid' => $user->guid,
+		'inverse_relationship' => false,
+		'type' => 'object',
+		'subtype' => 'hjevent',
+		'limit' => 10,
+		'offset' => 0,
+		'joins' => array("JOIN {$db_prefix}metadata as mtx on e.guid = mtx.entity_guid
+                      JOIN {$db_prefix}metastrings as msnx on mtx.name_id = msnx.id
+                      JOIN {$db_prefix}metastrings as msvx on mtx.value_id = msvx.id"
+		),
+		'wheres' => array("((msnx.string = 'calendar_end') AND (msvx.string > $timestamp))"),
+			//'order_by_metadata' => array('name' => 'calendar_start', 'direction' => 'asc', 'as' => 'integer')
+	);
+
+	$options = array_merge($rsvp_options, $getter_options);
+
+	if (!$return_options) {
+		return elgg_get_entities_from_relationship($options);
+	} else {
+		return $options;
+	}
+}
+
+function hj_events_list_user_rsvps($type = 'attending', $user = null, $timestamp = null, $getter_options = array()) {
+
+	$options = hj_events_get_user_rsvps($type, $user, $timestamp, $getter_options, true);
+	$events = hj_events_get_user_rsvps($type, $user, $timestamp, $getter_options, false);
+	$getter_options['count'] = true;
+	$events_count = hj_events_get_user_rsvps($type, $user, $timestamp, $getter_options, false);
+
+	$target = "hj-rsvps-$type-$user->guid";
+	$view_params = array(
+		'full_view' => false,
+		'list_id' => $target,
+		'list_class' => 'hj-view-list',
+		'item_class' => 'hj-view-entity elgg-state-draggable',
+		'pagination' => true,
+		'data-options' => $options,
+		'limit' => $options['limit'],
+		'count' => $events_count,
+		'base_url' => 'hj/sync/relationship',
+		'dom_order' => 'append'
+	);
+
+	$events_list = elgg_view_entity_list($events, $view_params);
+
+	return $events_list;
+}
+
+/**
+ * Helper function for looking up timezones
+ *
+ * @param array $associated_array
+ * @return array
+ */
+function hj_events_default_timezones($associated_array = true, $reverse_association) {
 
 	$defaults = array(
 		'Pacific/Kwajalein' => elgg_echo('Pacific/Kwajalein'),
@@ -135,6 +435,14 @@ function hj_events_default_timezones($associated_array = true, $reverse_associat
 	return elgg_trigger_plugin_hook('default_timezones', 'events', null, $defaults);
 }
 
+/**
+ * Helper function to retrieve data from arrays
+ *
+ * @param array $array
+ * @param bool $associated_array
+ * @param bool $reverse_association
+ * @return array
+ */
 function hj_events_format_array($array = array(), $associated_array = true, $reverse_association = false) {
 	if ($associated_array && !$reverse_association) {
 		$return = $array;
@@ -150,6 +458,11 @@ function hj_events_format_array($array = array(), $associated_array = true, $rev
 	return $return;
 }
 
+/**
+ * Overwrite default timezones
+ *
+ * @return array
+ */
 function hj_events_custom_timezones() {
 
 	$defaults = hj_events_default_timezones();

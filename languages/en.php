@@ -3,6 +3,7 @@
 $english = array(
 
 	'hj:events' => 'Events',
+	'hj:events:all' => 'All events',
 	'hj:events:menu:owner_block' => 'Events',
 
 	'item:object:hjevent' => 'Event',
@@ -59,7 +60,7 @@ $english = array(
 	'hj:events:past' => 'Past Events',
 	'hj:events:allevents' => 'All Events',
 	'hj:events:myevents' => 'My Events',
-	'hj:events:friendevents' => 'Friends\' Events',
+	'hj:events:friends' => 'Friends\' Events',
 
 	'hj:events:calendar' => 'Find Events by Date',
 	'hj:events:search' => 'Search Events',
@@ -70,6 +71,10 @@ $english = array(
 	'hj:events:search:notfound' => 'No events were found',
 
 	'hj:events:owned' => 'Events created by %s',
+	'hj:events:owner:upcoming' => 'Upcoming events by %s',
+	'hj:events:owner:past' => 'Past events by %s',
+	'hj:events:friends:upcoming' => 'Upcoming events by your friends',
+	'hj:events:friends:past' => 'Past events by your friends',
 	'hj:events:user:attending' => 'Events that %s is attending',
 	'hj:events:user:maybeattending' => 'Events that %s is maybe attending',
 

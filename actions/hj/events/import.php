@@ -85,7 +85,7 @@ for ($i = 1; $i <= sizeof($v->components); $i++) {
 	}
 	$ev = new hjEvent($guid);
 	$ev->owner_guid = elgg_get_logged_in_user_guid();
-	$ev->access_id = ACCESS_PRIVATE;
+	$ev->access_id = ACCESS_DEFAULT;
 	$ev->title = $event->getProperty("summary");
 	$ev->description = $event->getProperty("description");
 	$ev->cal_uid = $uid;
@@ -129,5 +129,3 @@ for ($i = 1; $i <= sizeof($v->components); $i++) {
 }
 
 system_message(elgg_echo('hj:events:import:status', array($imported, $updated, $failed)));
-
-

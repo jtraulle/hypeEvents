@@ -6,7 +6,6 @@ $full = elgg_extract('full_view', $vars, false);
 if (!$entity) {
 	return true;
 }
-
 elgg_load_css('hj.events.base');
 elgg_load_js('hj.events.base');
 
@@ -115,11 +114,21 @@ if (!$full || (elgg_is_xhr() && !elgg_in_context('fancybox'))) {
 
 	$sidebar = elgg_view_module('info', elgg_echo('hj:events:rsvp'), $rsvp_menu);
 
-	if (elgg_is_active_plugin('hypeMaps')) {
-		$map = '<div style="margin:0 auto">' . elgg_view('hj/maps/map', array(
-					'entity' => $entity,
-					'height' => '250px'
-				)) . '</div>';
+	if (elgg_is_active_plugin('hypeMaps') && $entity->location) {
+		$params = array(
+			'clat' => $entity->getLatitude(),
+			'clong' => $entity->getLongitude(),
+			'useSessionLocation' => false,
+			'height' => '250px'
+		);
+		$map = elgg_view_entity_list(array(), array(
+			'list_type' => 'geomap',
+			'list_class' => 'hj-geomap-list',
+			'autorefresh' => false,
+			'class' => 'hj-view-list',
+			'list_id' => "hj-event-map-$entity->guid",
+			'map_params' => $params
+				));
 
 		$sidebar .= elgg_view_module('info', elgg_echo('hj:events:map'), $map);
 	}
@@ -143,6 +152,12 @@ if (!$full || (elgg_is_xhr() && !elgg_in_context('fancybox'))) {
 	$comments .= elgg_view_module('info', elgg_echo('comments'), elgg_view_comments($entity));
 
 	echo $summary;
-	echo $full_description . $comments;
+	echo elgg_view_layout('hj/dynamic', array(
+		'grid' => array(8, 4),
+		'content' => array(
+			$full_description . $comments,
+			$sidebar
+		)
+	));
 }
 echo '</div>';

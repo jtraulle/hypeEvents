@@ -118,9 +118,6 @@ function hj_events_time_input_process($hook, $type, $return, $params) {
 }
 
 function hj_events_page_handler($page) {
-	elgg_load_js('hj.framework.ajax');
-
-
 	elgg_load_js('hj.events.base');
 	elgg_load_css('hj.events.base');
 
@@ -310,7 +307,7 @@ function hj_events_register_title_buttons() {
 	$params = array(
 		'form_guid' => $form->guid,
 		'subtype' => 'hjevent',
-		'owner_guid' => $user->guid,
+		'owner_guid' => elgg_get_logged_in_user_guid(),
 		'target' => 'hj-upcoming-events-list',
 		'dom_order' => 'prepend',
 		'ajaxify' => false

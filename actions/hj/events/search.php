@@ -20,10 +20,14 @@ $options = array(
 );
 
 if ($calendar_start) {
+	$dateobj = hj_events_get_offset_date_time_object($calendar_start);
+	$calendar_start = $dateobj->getTimestamp();
 	$options['metadata_name_value_pairs'][] = array('name' => 'calendar_start', 'value' => $calendar_start, 'operand' => '>=');
 }
 
 if ($calendar_end) {
+	$dateobj = hj_events_get_offset_date_time_object($calendar_end);
+	$calendar_end = $dateobj->getTimestamp();
 	$options['metadata_name_value_pairs'][] = array('name' => 'calendar_end', 'value' => $calendar_end, 'operand' => '<=');
 }
 
@@ -32,6 +36,8 @@ if ($location) {
 }
 
 if ($date) {
+	$dateobj = hj_events_get_offset_date_time_object($date);
+	$date = $dateobj->getTimestamp();
 	$options['metadata_name_value_pairs'][] = array('name' => 'calendar_start', 'value' => $date, 'operand' => '<=');
 	$options['metadata_name_value_pairs'][] = array('name' => 'calendar_end', 'value' => $date, 'operand' => '>=');
 }

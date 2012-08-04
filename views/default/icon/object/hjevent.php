@@ -7,7 +7,7 @@ if (!in_array($vars['size'], $sizes)) {
 	$vars['size'] = "medium";
 }
 
-if ($entity->icon) {
+if ($entity->icontime) {
 
 	$class = elgg_extract('img_class', $vars, '');
 

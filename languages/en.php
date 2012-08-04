@@ -102,6 +102,8 @@ $english = array(
 
 	'hj:events:endbeforestart' => 'End time must be after the start time',
 
+	'hj:events:agenda' => 'My Agenda',
+	
 	/**
 	 * TIMEZONES
 	 *

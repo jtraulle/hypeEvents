@@ -1,7 +1,9 @@
 <?php
 
-elgg_load_css('hj.events.base');
 elgg_load_js('hj.events.base');
+
+elgg_load_css('hj.events.agenda');
+elgg_load_js('hj.events.agenda');
 
 $form = hj_framework_get_data_pattern('object', 'hjevent');
 $event_guid = get_input('e');

@@ -145,6 +145,7 @@ function hj_events_list_upcoming_events($rel = 'all', $timestamp = null, $event_
 	$view_params = array(
 		'full_view' => false,
 		'list_id' => $target,
+		'list_type' => get_input('list_type', 'list'),
 		'list_class' => 'hj-view-list',
 		'item_class' => 'hj-view-entity elgg-state-draggable',
 		'pagination' => true,
@@ -207,6 +208,7 @@ function hj_events_list_past_events($rel = 'all', $timestamp = null, $event_opti
 	$view_params = array(
 		'full_view' => false,
 		'list_id' => $target,
+		'list_type' => get_input('list_type', 'list'),
 		'list_class' => 'hj-view-list',
 		'item_class' => 'hj-view-entity elgg-state-draggable',
 		'pagination' => true,
@@ -279,6 +281,7 @@ function hj_events_list_user_rsvps($type = 'attending', $user = null, $timestamp
 	$view_params = array(
 		'full_view' => false,
 		'list_id' => $target,
+		'list_type' => get_input('list_type', 'list'),
 		'list_class' => 'hj-view-list',
 		'item_class' => 'hj-view-entity elgg-state-draggable',
 		'pagination' => true,
@@ -300,7 +303,7 @@ function hj_events_list_user_rsvps($type = 'attending', $user = null, $timestamp
  * @param array $associated_array
  * @return array
  */
-function hj_events_default_timezones($associated_array = true, $reverse_association) {
+function hj_events_default_timezones($associated_array = true, $reverse_association = false) {
 
 	$defaults = array(
 		'Pacific/Kwajalein' => elgg_echo('Pacific/Kwajalein'),

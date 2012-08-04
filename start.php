@@ -51,6 +51,11 @@ function hj_events_init() {
 	$js_url = elgg_get_simplecache_url('js', 'hj/events/base');
 	elgg_register_js('hj.events.base', $js_url);
 
+	$js_agenda = elgg_get_simplecache_url('js', 'vendors/fullcalendar/fullcalendar.js');
+	elgg_register_js('hj.events.agenda', $js_agenda);
+
+	elgg_extend_view('css/hj/events/base', 'js/vendors/fullcalendar/fullcalendar.css');
+
 	// Add hypeFormBuilder Field Types and processing algorithms
 	elgg_register_plugin_hook_handler('hj:formbuilder:time_and_date', 'all', 'hj_events_time_input');
 	elgg_register_plugin_hook_handler('hj:framework:field:process', 'all', 'hj_events_time_input_process');
@@ -137,8 +142,16 @@ function hj_events_page_handler($page) {
 
 	switch ($type) {
 		case 'all' :
+			if (isset($page[1])) {
+				set_input('display', $page[1]);
+			}
 			hj_events_register_title_buttons();
 			include "{$pages}all.php";
+			break;
+
+		case 'search' :
+			include "{$pages}search.php";
+			break;
 			break;
 
 		case 'event' :
@@ -202,6 +215,14 @@ function hj_events_page_handler($page) {
 			gatekeeper();
 			include "{$pages}sync.php";
 			break;
+
+		case 'agenda' :
+			gatekeeper();
+			elgg_load_js('hj.events.agenda');
+			hj_events_register_title_buttons();
+			include "{$pages}agenda.php";
+			break;
+		
 	}
 	return true;
 }
@@ -239,6 +260,11 @@ function hj_events_entity_head_menu($hook, $type, $return, $params) {
 }
 
 function hj_events_rsvp_menu($hook, $type, $return, $params) {
+	
+	if (!elgg_is_logged_in()) {
+		return $return;
+	}
+
 	$entity = elgg_extract('entity', $params);
 	$handler = elgg_extract('handler', $params);
 	$data = hj_framework_json_query($params);
@@ -316,6 +342,22 @@ function hj_events_register_title_buttons() {
 	$params = hj_framework_json_query($params);
 
 	if (elgg_is_logged_in()) {
+//		elgg_register_menu_item('title', array(
+//			'name' => 'addevent',
+//			'title' => elgg_echo('hj:events:addnew'),
+//			'text' => elgg_view('input/button', array(
+//				'value' => elgg_echo('hj:events:addnew'),
+//				'class' => 'elgg-button-action'
+//			)),
+//			'href' => "action/framework/entities/edit",
+//			'is_action' => true,
+//			'rel' => 'fancybox',
+//			'id' => "hj-ajaxed-add-hjevent",
+//			'data-options' => htmlentities($params, ENT_QUOTES, 'UTF-8'),
+//			'class' => "hj-ajaxed-add",
+//			'target' => ""
+//		));
+
 		elgg_register_menu_item('title', array(
 			'name' => 'addevent',
 			'title' => elgg_echo('hj:events:addnew'),
@@ -323,13 +365,7 @@ function hj_events_register_title_buttons() {
 				'value' => elgg_echo('hj:events:addnew'),
 				'class' => 'elgg-button-action'
 			)),
-			'href' => "action/framework/entities/edit",
-			'is_action' => true,
-			'rel' => 'fancybox',
-			'id' => "hj-ajaxed-add-hjevent",
-			'data-options' => htmlentities($params, ENT_QUOTES, 'UTF-8'),
-			'class' => "hj-ajaxed-add",
-			'target' => ""
+			'href' => "events/edit",
 		));
 	}
 }

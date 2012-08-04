@@ -1,4 +1,5 @@
 <?php
+
 $getter_options = array(
 	'limit' => get_input('limit', 10),
 	'offset' => get_input('offset', 0)
@@ -11,29 +12,38 @@ $event_options = array(
 	'date' => (int) get_input('date', false)
 );
 
-$upcoming_events_list = hj_events_list_upcoming_events('all', null, $event_options, $getter_options);
-$past_events_list = hj_events_list_past_events('all', null, $event_options, $getter_options);
+$display = get_input('display', 'upcoming');
 
-$mod1 = elgg_view_module('aside', elgg_echo('hj:events:upcoming'), $upcoming_events_list);
-$mod2 = elgg_view_module('aside', elgg_echo('hj:events:past'), $past_events_list);
+switch ($display) {
 
-$content .= elgg_view_layout('hj/dynamic', array(
-	'grid' => array(6, 6),
-	'content' => array($mod1, $mod2)
+	case 'upcoming' :
+	default :
+		$content = hj_events_list_upcoming_events('all', null, $event_options, $getter_options);
+		$title = elgg_echo('hj:events:upcoming');
+		$filter_context = 'upcoming';
+		break;
+
+	case 'past' :
+		$content = hj_events_list_past_events('all', null, $event_options, $getter_options);
+		$title = elgg_echo('hj:events:past');
+		$filter_context = 'past';
+		break;
+}
+
+elgg_push_breadcrumb($title);
+
+$filter = elgg_view('hj/events/filter', array(
+	'filter_context' => $filter_context
 		));
 
-$content = elgg_view_module('info', '', $content, array('id' => 'hj-events-module'));
-$search_box = elgg_view('hj/events/search');
-
 $sidebar = elgg_view('hj/events/sidebar');
-$sidebar .= $search_box;
+//$sidebar .= elgg_view('hj/events/search');
 
-$title = elgg_echo('hj:events:all');
 $page = elgg_view_layout('content', array(
 	'title' => $title,
 	'sidebar' => $sidebar,
 	'content' => $content,
-	'filter_context' => 'all'
+	'filter' => $filter
 		));
 
 echo elgg_view_page($title, $page);

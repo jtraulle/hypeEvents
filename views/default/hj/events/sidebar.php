@@ -1,12 +1,6 @@
 <?php
 
-/**
- * Maps owner block
- */
 $user = elgg_get_logged_in_user_entity();
-
-elgg_load_js('hj.framework.ajax');
-
 
 elgg_register_menu_item('page', array(
 	'name' => 'allevents',
@@ -17,6 +11,15 @@ elgg_register_menu_item('page', array(
 ));
 
 if (elgg_is_logged_in()) {
+
+	elgg_register_menu_item('page', array(
+		'name' => 'myagenda',
+		'title' => elgg_echo('hj:events:agenda'),
+		'text' => elgg_echo('hj:events:agenda'),
+		'href' => "events/agenda",
+		'priority' => 500
+	));
+
 	elgg_register_menu_item('page', array(
 		'name' => 'import',
 		'title' => elgg_echo('hj:events:import'),

@@ -47,12 +47,15 @@ function hj_events_init() {
 	// Register CSS and JS
 	$css_url = elgg_get_simplecache_url('css', 'hj/events/base');
 	elgg_register_css('hj.events.base', $css_url);
+	elgg_register_simplecache_view('css/hj/events/base');
 
 	$js_url = elgg_get_simplecache_url('js', 'hj/events/base');
 	elgg_register_js('hj.events.base', $js_url);
+	elgg_register_simplecache_view('js/hj/events/base');
 
 	$js_agenda = elgg_get_simplecache_url('js', 'vendors/fullcalendar/fullcalendar.js');
 	elgg_register_js('hj.events.agenda', $js_agenda);
+	elgg_register_simplecache_view('js/vendors/fullcalendar/fullcalendar.js');
 
 	elgg_extend_view('css/hj/events/base', 'js/vendors/fullcalendar/fullcalendar.css');
 
